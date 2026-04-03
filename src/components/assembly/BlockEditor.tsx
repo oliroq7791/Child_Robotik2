@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSimulatorStore } from '../../store/simulatorStore';
-import { useAssemblyStore } from '../../store/assemblyStore';
 
 interface Block {
   id: string;

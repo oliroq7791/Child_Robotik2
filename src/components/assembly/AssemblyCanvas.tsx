@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAssemblyStore } from '../../store/assemblyStore';
 import type { PlacedComponent } from '../../store/assemblyStore';
 import { useSimulatorStore } from '../../store/simulatorStore';
-import { COMPONENTS } from '../../data/components';
 
 const COMPONENT_COLORS: Record<string, string> = {
   'controllers': '#2563EB',

@@ -50,7 +50,7 @@ interface SimulatorStore {
   reset: () => void;
 }
 
-export const useSimulatorStore = create<SimulatorStore>((set, get) => ({
+export const useSimulatorStore = create<SimulatorStore>((set) => ({
   mode: 'idle',
   componentStates: {},
   consoleMessages: [],

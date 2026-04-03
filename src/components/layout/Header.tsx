@@ -8,7 +8,7 @@ import ProfileModal from '../ui/ProfileModal';
 import TemplatesModal from '../ui/TemplatesModal';
 
 export default function Header() {
-  const { xp, currentMissionId, completedMissions, earnedBadges } = useProgressStore();
+  const { xp, currentMissionId, completedMissions } = useProgressStore();
   const level = getLevelFromXP(xp);
   const [showMissions, setShowMissions] = useState(false);
   const [showProfile, setShowProfile] = useState(false);

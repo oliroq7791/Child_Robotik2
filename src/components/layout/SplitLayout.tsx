@@ -8,7 +8,6 @@ import {
 } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { useAssemblyStore } from '../../store/assemblyStore';
-import { COMPONENTS } from '../../data/components';
 import type { RoboComponent } from '../../data/components';
 import ComponentPalette from '../assembly/ComponentPalette';
 import AssemblyCanvas from '../assembly/AssemblyCanvas';

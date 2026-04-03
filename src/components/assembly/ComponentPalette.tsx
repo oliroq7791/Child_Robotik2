@@ -12,13 +12,10 @@ function DraggablePaletteItem({ component }: { component: RoboComponent }) {
     data: { type: 'palette-component', component },
   });
 
-  const style = transform ? { transform: CSS.Translate.toString(transform) } : undefined;
-
   return (
     <div className="relative">
       <motion.div
         ref={setNodeRef}
-        style={style}
         {...listeners}
         {...attributes}
         whileHover={{ scale: 1.05 }}
@@ -26,7 +23,7 @@ function DraggablePaletteItem({ component }: { component: RoboComponent }) {
         className={`drag-component flex items-center gap-2 p-2 rounded-xl border-2 cursor-grab transition-all ${
           isDragging ? 'opacity-50 border-blue-400 shadow-lg shadow-blue-500/20' : 'border-transparent hover:border-blue-400/50'
         }`}
-        style={{ ...style, backgroundColor: component.bgColor + '40' }}
+        style={{ ...(transform ? { transform: CSS.Translate.toString(transform) } : {}), backgroundColor: component.bgColor + '40' }}
         onMouseEnter={() => setShowFact(true)}
         onMouseLeave={() => setShowFact(false)}
       >

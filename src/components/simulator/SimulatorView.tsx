@@ -170,9 +170,9 @@ function SimulatorCanvas() {
 }
 
 export default function SimulatorView() {
-  const { mode, setMode, setComponentState, addMessage, setMascot, xpFloat, reset } = useSimulatorStore();
+  const { mode, setMode, setComponentState, addMessage, setMascot, xpFloat, reset, showXPFloat } = useSimulatorStore();
   const { placed } = useAssemblyStore();
-  const { currentMissionId, completeMission, addXP, showXPFloat } = useProgressStore();
+  const { currentMissionId, completeMission, addXP } = useProgressStore();
   const simIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const blinkRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
