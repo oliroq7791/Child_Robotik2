@@ -16,11 +16,20 @@ import SimulatorView from '../simulator/SimulatorView';
 import MissionGuide from './MissionGuide';
 import XPBar from '../gamification/XPBar';
 
+type MobileTab = 'montagem' | 'blocos' | 'simulador';
+
+const MOBILE_TABS: { id: MobileTab; label: string; emoji: string }[] = [
+  { id: 'montagem',  label: 'Montagem',  emoji: '🔧' },
+  { id: 'blocos',    label: 'Blocos',    emoji: '🧩' },
+  { id: 'simulador', label: 'Simular',   emoji: '▶️' },
+];
+
 export default function SplitLayout() {
   const { addComponent } = useAssemblyStore();
-  const [splitPos, setSplitPos] = useState(52); // % for left panel
+  const [splitPos, setSplitPos]           = useState(52);
   const [draggingDivider, setDraggingDivider] = useState(false);
   const [activeComponent, setActiveComponent] = useState<RoboComponent | null>(null);
+  const [mobileTab, setMobileTab]         = useState<MobileTab>('montagem');
   const containerRef = useRef<HTMLDivElement>(null);
 
   const sensors = useSensors(
@@ -38,7 +47,6 @@ export default function SplitLayout() {
     const { over, active } = event;
     if (over?.id === 'assembly-canvas' && active.data.current?.type === 'palette-component') {
       const component = active.data.current.component as RoboComponent;
-      // Get canvas rect to compute drop position
       const canvasEl = document.querySelector('[data-canvas="true"]');
       const rect = canvasEl?.getBoundingClientRect();
       const x = rect ? Math.max(10, (event.delta.x + (rect.width / 2)) % (rect.width - 100)) : 80;
@@ -47,7 +55,7 @@ export default function SplitLayout() {
     }
   }, [addComponent]);
 
-  // Divider drag
+  // Divider drag (desktop only)
   const onDividerMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setDraggingDivider(true);
@@ -69,29 +77,26 @@ export default function SplitLayout() {
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div ref={containerRef} className="flex flex-1 min-h-0 overflow-hidden" style={{ cursor: draggingDivider ? 'col-resize' : 'default' }}>
 
+      {/* ───────────── DESKTOP (md+) ───────────── */}
+      <div
+        ref={containerRef}
+        className="hidden md:flex flex-1 min-h-0 overflow-hidden"
+        style={{ cursor: draggingDivider ? 'col-resize' : 'default' }}
+      >
         {/* LEFT PANEL */}
         <div className="flex flex-col min-h-0 overflow-hidden" style={{ width: `${splitPos}%`, flexShrink: 0 }}>
           <div className="flex flex-1 min-h-0 overflow-hidden">
-            {/* Palette sidebar */}
             <div className="w-44 flex-shrink-0 p-2 border-r border-slate-700">
               <ComponentPalette />
             </div>
-
-            {/* Assembly area + block editor */}
             <div className="flex-1 flex flex-col min-h-0 min-w-0">
-              {/* Mission guide */}
               <div className="p-2 border-b border-slate-700 flex-shrink-0">
                 <MissionGuide />
               </div>
-
-              {/* Canvas */}
               <div className="flex-1 min-h-0" data-canvas="true">
                 <AssemblyCanvas />
               </div>
-
-              {/* Block editor */}
               <div style={{ height: '200px', flexShrink: 0 }}>
                 <BlockEditor />
               </div>
@@ -109,13 +114,67 @@ export default function SplitLayout() {
 
         {/* RIGHT PANEL */}
         <div className="flex-1 flex flex-col min-h-0 p-3 gap-3 overflow-hidden">
-          {/* XP bar */}
           <XPBar />
-
-          {/* Simulator */}
           <div className="flex-1 min-h-0">
             <SimulatorView />
           </div>
+        </div>
+      </div>
+
+      {/* ───────────── MOBILE (< md) ───────────── */}
+      <div className="flex md:hidden flex-col flex-1 min-h-0 overflow-hidden">
+
+        {/* Tab content */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          {mobileTab === 'montagem' && (
+            <div className="flex flex-col h-full">
+              {/* Mission guide collapsed on mobile */}
+              <div className="px-2 pt-2 flex-shrink-0">
+                <MissionGuide />
+              </div>
+              {/* Palette horizontal scroll */}
+              <div className="px-2 pt-2 flex-shrink-0">
+                <ComponentPalette mobile />
+              </div>
+              {/* Canvas */}
+              <div className="flex-1 min-h-0 mx-2 mb-2 mt-2" data-canvas="true">
+                <AssemblyCanvas />
+              </div>
+            </div>
+          )}
+
+          {mobileTab === 'blocos' && (
+            <div className="h-full">
+              <BlockEditor />
+            </div>
+          )}
+
+          {mobileTab === 'simulador' && (
+            <div className="flex flex-col h-full p-2 gap-2">
+              <XPBar />
+              <div className="flex-1 min-h-0">
+                <SimulatorView />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom tab bar */}
+        <div className="flex-shrink-0 flex border-t border-slate-700 bg-slate-900">
+          {MOBILE_TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setMobileTab(tab.id)}
+              className={`flex-1 flex flex-col items-center justify-center py-3 gap-0.5 transition-colors ${
+                mobileTab === tab.id
+                  ? 'text-blue-400 bg-blue-500/10 border-t-2 border-blue-400'
+                  : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              <span className="text-lg leading-none">{tab.emoji}</span>
+              <span className="text-[10px] font-bold">{tab.label}</span>
+            </button>
+          ))}
         </div>
       </div>
 

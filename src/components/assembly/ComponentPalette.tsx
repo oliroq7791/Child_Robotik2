@@ -5,7 +5,7 @@ import { COMPONENTS, CATEGORY_LABELS } from '../../data/components';
 import type { RoboComponent, ComponentCategory } from '../../data/components';
 import { motion, AnimatePresence } from 'framer-motion';
 
-function DraggablePaletteItem({ component }: { component: RoboComponent }) {
+function DraggablePaletteItem({ component, compact = false }: { component: RoboComponent; compact?: boolean }) {
   const [showFact, setShowFact] = useState(false);
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `palette-${component.id}`,
@@ -20,22 +20,28 @@ function DraggablePaletteItem({ component }: { component: RoboComponent }) {
         {...attributes}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className={`drag-component flex items-center gap-2 p-2 rounded-xl border-2 cursor-grab transition-all ${
+        className={`drag-component flex items-center cursor-grab transition-all rounded-xl border-2 ${
           isDragging ? 'opacity-50 border-blue-400 shadow-lg shadow-blue-500/20' : 'border-transparent hover:border-blue-400/50'
-        }`}
+        } ${compact ? 'flex-col gap-0.5 p-2 w-16' : 'gap-2 p-2'}`}
         style={{ ...(transform ? { transform: CSS.Translate.toString(transform) } : {}), backgroundColor: component.bgColor + '40' }}
         onMouseEnter={() => setShowFact(true)}
         onMouseLeave={() => setShowFact(false)}
+        onTouchStart={() => setShowFact(true)}
+        onTouchEnd={() => setShowFact(false)}
       >
-        <span className="text-xl flex-shrink-0">{component.emoji}</span>
-        <div className="min-w-0">
-          <p className="text-xs font-bold text-white truncate">{component.name}</p>
-          <p className="text-[10px] text-slate-400 truncate">{component.description.slice(0, 30)}...</p>
-        </div>
+        <span className={compact ? 'text-2xl' : 'text-xl flex-shrink-0'}>{component.emoji}</span>
+        {compact ? (
+          <p className="text-[9px] font-bold text-white text-center leading-tight truncate w-full">{component.name}</p>
+        ) : (
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-white truncate">{component.name}</p>
+            <p className="text-[10px] text-slate-400 truncate">{component.description.slice(0, 30)}...</p>
+          </div>
+        )}
       </motion.div>
 
       <AnimatePresence>
-        {showFact && (
+        {showFact && !compact && (
           <motion.div
             initial={{ opacity: 0, x: 10, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -48,12 +54,23 @@ function DraggablePaletteItem({ component }: { component: RoboComponent }) {
             <p className="text-[10px] text-blue-400 mt-1">📌 Pinos: {component.pins.map(p => p.label).join(', ')}</p>
           </motion.div>
         )}
+        {showFact && compact && (
+          <motion.div
+            initial={{ opacity: 0, y: 6, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.95 }}
+            className="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 bg-slate-800 border border-slate-600 rounded-xl p-2 w-44 shadow-xl pointer-events-none"
+          >
+            <p className="text-[10px] font-bold text-white mb-1">{component.name}</p>
+            <p className="text-[10px] text-yellow-400">🌟 {component.funFact}</p>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
 }
 
-export default function ComponentPalette() {
+export default function ComponentPalette({ mobile = false }: { mobile?: boolean }) {
   const [activeCategory, setActiveCategory] = useState<ComponentCategory>('controllers');
   const [search, setSearch] = useState('');
 
@@ -63,6 +80,40 @@ export default function ComponentPalette() {
     (search === '' || c.name.toLowerCase().includes(search.toLowerCase()))
   );
 
+  // ── Mobile: horizontal compact layout ──
+  if (mobile) {
+    return (
+      <div className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+        {/* Category tabs */}
+        <div className="flex overflow-x-auto border-b border-slate-700 scrollbar-hide">
+          {categories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`flex-shrink-0 px-3 py-2 text-[10px] font-bold transition-colors whitespace-nowrap ${
+                activeCategory === cat
+                  ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-500/10'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              {CATEGORY_LABELS[cat]}
+            </button>
+          ))}
+        </div>
+        {/* Components horizontal scroll */}
+        <div className="flex gap-2 p-2 overflow-x-auto scrollbar-hide">
+          {filtered.map(component => (
+            <DraggablePaletteItem key={component.id} component={component} compact />
+          ))}
+          {filtered.length === 0 && (
+            <p className="text-xs text-slate-500 py-2 px-2">Nenhum componente</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Desktop: vertical layout ──
   return (
     <div className="flex flex-col h-full bg-slate-900 rounded-xl overflow-hidden border border-slate-700">
       <div className="p-3 border-b border-slate-700">
